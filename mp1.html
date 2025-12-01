@@ -1,281 +1,395 @@
-import React, { useState } from 'react';
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tokoshop Dashboard - Frontend</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {background:#f7f9fc}
+    .sidebar {min-height:100vh}
+    .card-small {min-height:110px}
+    .table-responsive {max-height:420px; overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <!-- SIDEBAR -->
+      <nav class="col-md-2 d-none d-md-block bg-white sidebar border-end py-3">
+        <div class="px-3">
+          <h4 class="mb-4">Tokoshop</h4>
+          <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link active" href="#dashboard"> <i class="fa fa-home me-2"></i> Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="#users"> <i class="fa fa-users me-2"></i> Manajemen Users</a></li>
+            <li class="nav-item"><a class="nav-link" href="#suppliers"> <i class="fa fa-truck me-2"></i> Supplier</a></li>
+            <li class="nav-item"><a class="nav-link" href="#customers"> <i class="fa fa-user-check me-2"></i> Pelanggan</a></li>
+            <li class="nav-item"><a class="nav-link" href="#products"> <i class="fa fa-boxes-stacked me-2"></i> Produk</a></li>
+            <li class="nav-item"><a class="nav-link" href="#transactions"> <i class="fa fa-receipt me-2"></i> Transaksi</a></li>
+            <li class="nav-item"><a class="nav-link" href="#reports"> <i class="fa fa-chart-line me-2"></i> Laporan</a></li>
+          </ul>
+        </div>
+      </nav>
 
-// Tokoshop Frontend — Single-file demo app
-// - Uses Tailwind classes (assumes Tailwind is available in the host project)
-// - Default export App component
-// - Contains routes-style sections for: Store, POS, Articles, AHP SPK, Digital Invitations (30 templates gallery)
-// - Minimal but production-minded structure for quick iteration
-
-export default function App(){
-  const [view, setView] = useState('home');
-  const [cart, setCart] = useState([]);
-  const [posItems, setPosItems] = useState([]);
-  const [ahp, setAhp] = useState({criteria:[], alternatives:[]});
-
-  // Sample product catalog
-  const products = [
-    {id:1, title:'Kartu Undangan Premium', price:25000, tag:'undangan'},
-    {id:2, title:'Amplop Elegan', price:5000, tag:'aksesoris'},
-    {id:3, title:'Paket Cetak 50', price:350000, tag:'paket'},
-  ];
-
-  // 30 invitation templates metadata
-  const invitationTemplates = Array.from({length:30}).map((_,i)=>({
-    id: i+1,
-    name: `Template ${i+1}`,
-    style: i%3===0? 'Minimal' : i%3===1? 'Floral' : 'Modern',
-    description: `Desain ${i+1} — elegan & estetik untuk undangan pernikahan / acara resmi.`
-  }));
-
-  function addToCart(p){ setCart(c=>[...c,p]); }
-  function removeFromCart(index){ setCart(c=>c.filter((_,i)=>i!==index)); }
-  function addPosItem(item){ setPosItems(s=>[...s,item]); }
-
-  return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="bg-white shadow p-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Tokoshop Suite — Frontend Demo</h1>
-        <nav className="space-x-3">
-          {['home','shop','pos','articles','ahp','invites'].map(k=> (
-            <button key={k} onClick={()=>setView(k)} className={`px-3 py-1 rounded ${view===k? 'bg-indigo-600 text-white': 'hover:bg-indigo-50'}`}>{k.toUpperCase()}</button>
-          ))}
+      <!-- MAIN CONTENT -->
+      <main class="col-md-10 ms-sm-auto col-lg-10 px-md-4">
+        <!-- TOPBAR -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+          <div class="container-fluid px-3">
+            <a class="navbar-brand" href="#">Dashboard</a>
+            <div class="d-flex align-items-center ms-auto">
+              <div class="me-3">Welcome, <strong>Superadmin</strong></div>
+              <button class="btn btn-outline-secondary btn-sm">Logout</button>
+            </div>
+          </div>
         </nav>
-      </header>
 
-      <main className="p-6">
-        {view==='home' && (
-          <section>
-            <h2 className="text-2xl font-bold mb-3">Selamat datang</h2>
-            <p className="mb-4">Pilih modul di atas: Toko, POS, Artikel, SPK AHP, atau Galeri Undangan (30 template).</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Panel title="Toko Online" onClick={()=>setView('shop')}>
-                Jual produk & template undangan.
-              </Panel>
-              <Panel title="POS" onClick={()=>setView('pos')}>Kasir cepat untuk offline & online.</Panel>
-              <Panel title="Undangan" onClick={()=>setView('invites')}>30 template estetik.</Panel>
-            </div>
-          </section>
-        )}
-
-        {view==='shop' && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Toko Online</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {products.map(p=> (
-                <div key={p.id} className="bg-white p-4 rounded shadow">
-                  <div className="h-40 bg-gradient-to-br from-gray-100 to-white rounded mb-3 flex items-center justify-center">Thumbnail</div>
-                  <h3 className="font-semibold">{p.title}</h3>
-                  <p className="text-sm text-gray-500">{p.tag}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <div className="font-bold">Rp {format(p.price)}</div>
-                    <button onClick={()=>addToCart(p)} className="px-3 py-1 rounded bg-green-600 text-white">Tambah</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <Cart cart={cart} remove={removeFromCart} />
-          </section>
-        )}
-
-        {view==='pos' && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Aplikasi POS (Kasir)</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded shadow">
-                <h3 className="font-semibold mb-2">Input Produk Cepat</h3>
-                <PosQuickAdd onAdd={(name,price)=>addPosItem({id:Date.now(),name,price})} />
-                <div className="mt-4">
-                  <h4 className="font-medium">Daftar Item (POS)</h4>
-                  <ul className="mt-2 space-y-2">
-                    {posItems.map(it=> (
-                      <li key={it.id} className="flex justify-between bg-gray-50 p-2 rounded">{it.name} <span className="font-semibold">Rp {format(it.price)}</span></li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="bg-white p-4 rounded shadow">
-                <h3 className="font-semibold">Transaksi Cepat</h3>
-                <p className="text-sm text-gray-500">Tambahkan dari katalog atau input manual, lalu proses pembayaran.</p>
-                <div className="mt-3">
-                  <button onClick={()=>{ setPosItems([]); alert('Transaksi selesai (simulasi)'); }} className="px-3 py-2 bg-indigo-600 text-white rounded">Bayar</button>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {view==='articles' && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Manajemen Artikel</h2>
-            <ArticleEditor />
-          </section>
-        )}
-
-        {view==='ahp' && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">SPK — AHP (Analytic Hierarchy Process) — Simplified</h2>
-            <AHPModule ahp={ahp} setAhp={setAhp} />
-          </section>
-        )}
-
-        {view==='invites' && (
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Galeri Undangan — 30 Template</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {invitationTemplates.map(t=> (
-                <div key={t.id} className="bg-white rounded shadow p-4">
-                  <div className="h-36 mb-3 rounded overflow-hidden flex items-end" style={{background:`linear-gradient(180deg, rgba(0,0,0,0.05), rgba(255,255,255,0.02))`}}>
-                    <div className="p-3">
-                      <div className="text-sm font-semibold">{t.name}</div>
-                      <div className="text-xs text-gray-500">{t.style} • {t.description}</div>
+        <div class="p-3">
+          <!-- Dashboard / Slider -->
+          <section id="dashboard">
+            <div class="row gy-3">
+              <div class="col-lg-8">
+                <div id="promoCarousel" class="carousel slide" data-bs-ride="carousel">
+                  <div class="carousel-inner rounded shadow-sm">
+                    <div class="carousel-item active">
+                      <img src="https://via.placeholder.com/900x250?text=Promo+1" class="d-block w-100" alt="Promo 1">
+                    </div>
+                    <div class="carousel-item">
+                      <img src="https://via.placeholder.com/900x250?text=Promo+2" class="d-block w-100" alt="Promo 2">
+                    </div>
+                    <div class="carousel-item">
+                      <img src="https://via.placeholder.com/900x250?text=Promo+3" class="d-block w-100" alt="Promo 3">
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="flex-1 px-3 py-2 rounded border" onClick={()=>alert('Preview: '+t.name)}>Preview</button>
-                    <button className="flex-1 px-3 py-2 rounded bg-indigo-600 text-white" onClick={()=>alert('Pilih '+t.name)}>Pilih</button>
+                  <button class="carousel-control-prev" type="button" data-bs-target="#promoCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                  </button>
+                  <button class="carousel-control-next" type="button" data-bs-target="#promoCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                  </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="row mt-3">
+                  <div class="col-sm-4">
+                    <div class="card card-small p-3">
+                      <div>Total Users</div>
+                      <h3 id="stat-users">12</h3>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="card card-small p-3">
+                      <div>Products</div>
+                      <h3 id="stat-products">78</h3>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="card card-small p-3">
+                      <div>Orders (this month)</div>
+                      <h3 id="stat-orders">34</h3>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-6 bg-white p-4 rounded shadow">
-              <h3 className="font-semibold mb-2">Fitur Undangan (ide tambahan)</h3>
-              <ul className="list-disc ml-5 text-sm text-gray-600">
-                <li>Custom text & photo upload</li>
-                <li>RSVP & guest list export</li>
-                <li>Counter hari menuju acara</li>
-                <li>Integrasi pembayaran & cetak</li>
-              </ul>
+              </div>
+
+              <!-- Right column: Small charts -->
+              <div class="col-lg-4">
+                <div class="card p-3 shadow-sm">
+                  <h6>Ringkasan Penjualan</h6>
+                  <canvas id="miniSalesChart" height="150"></canvas>
+                </div>
+              </div>
             </div>
           </section>
-        )}
 
-      </main>
+          <!-- Users Management -->
+          <section id="users" class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Manajemen Users</h4>
+              <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal">Tambah User</button>
+              </div>
+            </div>
+            <div class="card p-3">
+              <div class="mb-3 d-flex gap-2">
+                <select id="filterRole" class="form-select w-auto">
+                  <option value="all">Semua role</option>
+                  <option value="superadmin">Superadmin</option>
+                  <option value="admin">Admin</option>
+                  <option value="kasir">Kasir</option>
+                </select>
+                <input id="searchUser" class="form-control w-50" placeholder="Cari user...">
+              </div>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead><tr><th>#</th><th>Nama</th><th>Email</th><th>Role</th><th>Aksi</th></tr></thead>
+                  <tbody id="usersTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-      <footer className="p-4 text-center text-sm text-gray-500">Tokoshop Suite — Frontend Prototype</footer>
-    </div>
-  );
-}
+          <!-- Suppliers -->
+          <section id="suppliers" class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Manajemen Supplier</h4>
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#supplierModal">Tambah Supplier</button>
+            </div>
+            <div class="card p-3">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead><tr><th>#</th><th>Nama Supplier</th><th>Kontak</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                  <tbody id="supplierTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-// -------------------- Helper components --------------------
-function Panel({title, children, onClick}){
-  return (
-    <div className="bg-white p-4 rounded shadow cursor-pointer" onClick={onClick}>
-      <h3 className="font-semibold">{title}</h3>
-      <p className="text-sm text-gray-600">{children}</p>
-    </div>
-  );
-}
+          <!-- Customers -->
+          <section id="customers" class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Manajemen Pelanggan</h4>
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal">Tambah Pelanggan</button>
+            </div>
+            <div class="card p-3">
+              <div class="mb-3 d-flex gap-2">
+                <select id="filterCustType" class="form-select w-auto">
+                  <option value="all">Semua tipe</option>
+                  <option value="umum">Umum</option>
+                  <option value="semi">Semi</option>
+                  <option value="member">Member</option>
+                </select>
+              </div>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead><tr><th>#</th><th>Nama</th><th>Tipe</th><th>Kontak</th><th>Aksi</th></tr></thead>
+                  <tbody id="customerTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
 
-function Cart({cart, remove}){
-  const total = cart.reduce((s,i)=>s+i.price,0);
-  return (
-    <div className="mt-6 bg-white p-4 rounded shadow">
-      <h3 className="font-semibold mb-2">Keranjang ({cart.length})</h3>
-      {cart.length===0? <div className="text-sm text-gray-500">Kosong</div> : (
-        <div>
-          <ul className="space-y-2">
-            {cart.map((c,i)=> (
-              <li key={i} className="flex justify-between items-center">
-                <div>{c.title}</div>
-                <div className="flex items-center gap-2">
-                  <div className="font-medium">Rp {format(c.price)}</div>
-                  <button className="text-red-600 text-sm" onClick={()=>remove(i)}>Hapus</button>
+          <!-- Products -->
+          <section id="products" class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Manajemen Produk</h4>
+              <div>
+                <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#categoryModal">Kategori</button>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal">Tambah Produk</button>
+              </div>
+            </div>
+            <div class="card p-3">
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead><tr><th>#</th><th>Kategori</th><th>Nama Produk</th><th>SKU</th><th>Stok</th><th>Harga</th><th>Aksi</th></tr></thead>
+                  <tbody id="productTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Transactions -->
+          <section id="transactions" class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Transaksi</h4>
+              <div>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#orderModal">Buat Pesanan</button>
+              </div>
+            </div>
+            <div class="card p-3">
+              <h6>Daftar Pesanan</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead><tr><th>#</th><th>Invoice</th><th>Pelanggan</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+                  <tbody id="orderTable"></tbody>
+                </table>
+              </div>
+
+              <hr>
+              <h6>Data Cicilan</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead><tr><th>#</th><th>Invoice</th><th>Pelanggan</th><th>Jumlah Cicilan</th><th>Status</th></tr></thead>
+                  <tbody id="installmentTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- Reports -->
+          <section id="reports" class="mt-5 mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h4>Laporan & Chart</h4>
+              <button class="btn btn-outline-primary" id="exportPdf">Export PDF (placeholder)</button>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card p-3">
+                  <h6>Penjualan Bulanan</h6>
+                  <canvas id="salesChart" height="200"></canvas>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-3 flex justify-between items-center">
-            <div className="font-bold">Total: Rp {format(total)}</div>
-            <button className="px-3 py-2 bg-green-600 text-white rounded">Checkout</button>
+              </div>
+              <div class="col-md-6">
+                <div class="card p-3">
+                  <h6>Produk Terlaris</h6>
+                  <canvas id="topProductsChart" height="200"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- --- MODALS (users, suppliers, customers, products, orders) --- -->
+  <!-- User Modal -->
+  <div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="userForm">
+        <div class="modal-header"><h5 class="modal-title">Tambah / Edit User</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <input type="hidden" id="userId">
+          <div class="mb-3"><label>Nama</label><input id="userName" class="form-control"></div>
+          <div class="mb-3"><label>Email</label><input id="userEmail" class="form-control"></div>
+          <div class="mb-3"><label>Role</label>
+            <select id="userRole" class="form-select"><option value="superadmin">Superadmin</option><option value="admin">Admin</option><option value="kasir">Kasir</option></select>
           </div>
         </div>
-      )}
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+      </form>
     </div>
-  );
-}
+  </div>
 
-function PosQuickAdd({onAdd}){
-  const [name,setName] = useState('');
-  const [price,setPrice] = useState('');
-  return (
-    <div>
-      <input value={name} onChange={e=>setName(e.target.value)} placeholder="Nama item" className="w-full p-2 border rounded mb-2" />
-      <input value={price} onChange={e=>setPrice(e.target.value)} placeholder="Harga" className="w-full p-2 border rounded mb-2" />
-      <button onClick={()=>{ if(!name||!price) return alert('Isi data'); onAdd(name, Number(price)); setName(''); setPrice(''); }} className="px-3 py-2 bg-indigo-600 text-white rounded">Tambah</button>
+  <!-- Supplier Modal -->
+  <div class="modal fade" id="supplierModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="supplierForm">
+        <div class="modal-header"><h5 class="modal-title">Tambah Supplier</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <input type="hidden" id="supplierId">
+          <div class="mb-3"><label>Nama</label><input id="supplierName" class="form-control"></div>
+          <div class="mb-3"><label>Kontak</label><input id="supplierContact" class="form-control"></div>
+          <div class="mb-3"><label>Alamat</label><textarea id="supplierAddress" class="form-control"></textarea></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+      </form>
     </div>
-  );
-}
+  </div>
 
-function ArticleEditor(){
-  const [title,setTitle] = useState('');
-  const [body,setBody] = useState('');
-  const [saved, setSaved] = useState([]);
-  function save(){ if(!title||!body) return alert('Masukkan judul & isi'); setSaved(s=>[{title,body,at:new Date().toISOString()}, ...s]); setTitle(''); setBody(''); }
-  return (
-    <div className="bg-white p-4 rounded shadow">
-      <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Judul artikel" className="w-full p-2 border rounded mb-2" />
-      <textarea value={body} onChange={e=>setBody(e.target.value)} rows={6} placeholder="Isi artikel (HTML allowed)" className="w-full p-2 border rounded mb-2" />
-      <div className="flex gap-2">
-        <button onClick={save} className="px-3 py-2 bg-indigo-600 text-white rounded">Simpan</button>
-        <button onClick={()=>{ setTitle(''); setBody(''); }} className="px-3 py-2 border rounded">Bersihkan</button>
-      </div>
-      <div className="mt-4">
-        <h4 className="font-semibold">Artikel Tersimpan</h4>
-        <ul className="mt-2 space-y-2">
-          {saved.map((s,i)=> (
-            <li key={i} className="p-2 border rounded">
-              <div className="font-semibold">{s.title}</div>
-              <div className="text-xs text-gray-500">{new Date(s.at).toLocaleString()}</div>
-              <div className="mt-2 text-sm" dangerouslySetInnerHTML={{__html: s.body}} />
-            </li>
-          ))}
-        </ul>
-      </div>
+  <!-- Customer Modal -->
+  <div class="modal fade" id="customerModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="customerForm">
+        <div class="modal-header"><h5 class="modal-title">Tambah Pelanggan</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <input type="hidden" id="customerId">
+          <div class="mb-3"><label>Nama</label><input id="customerName" class="form-control"></div>
+          <div class="mb-3"><label>Tipe</label>
+            <select id="customerType" class="form-select"><option value="umum">Umum</option><option value="semi">Semi</option><option value="member">Member</option></select>
+          </div>
+          <div class="mb-3"><label>Kontak</label><input id="customerContact" class="form-control"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+      </form>
     </div>
-  );
-}
+  </div>
 
-// -------------------- Simple AHP module --------------------
-function AHPModule({ahp, setAhp}){
-  const [criteriaText, setCriteriaText] = useState('Biaya,Kualitas,Waktu');
-  const [altsText, setAltsText] = useState('Vendor A,Vendor B,Vendor C');
-
-  function init(){
-    const criteria = criteriaText.split(',').map(s=>s.trim()).filter(Boolean);
-    const alternatives = altsText.split(',').map(s=>s.trim()).filter(Boolean);
-    // Create simple pairwise matrices filled with 1 (equal) as starting point
-    const criteriaMatrix = Array.from({length:criteria.length},()=>Array(criteria.length).fill(1));
-    const altMatrices = alternatives.map(()=> Array.from({length:criteria.length},()=>Array(alternatives.length).fill(1)));
-    setAhp({criteria,alternatives,criteriaMatrix,altMatrices});
-  }
-
-  function computeSimple(){
-    // Very simplified scoring: equal weights from criteria matrix diagonal
-    const {criteria=[],alternatives=[]} = ahp;
-    if(!criteria.length || !alternatives.length) return alert('Inisialisasi terlebih dahulu');
-    // Score each alternative with random-ish demo values (replace with real eigenvector calc in prod)
-    const scores = alternatives.map((a,i)=> ({alt:a,score:Math.random()})).sort((a,b)=>b.score-a.score);
-    alert('Hasil (simulasi):\n' + scores.map(s=>`${s.alt}: ${s.score.toFixed(3)}`).join('\n'));
-  }
-
-  return (
-    <div className="bg-white p-4 rounded shadow">
-      <label className="text-sm">Kriteria (pisah koma)</label>
-      <input value={criteriaText} onChange={e=>setCriteriaText(e.target.value)} className="w-full p-2 border rounded mb-2" />
-      <label className="text-sm">Alternatif (pisah koma)</label>
-      <input value={altsText} onChange={e=>setAltsText(e.target.value)} className="w-full p-2 border rounded mb-2" />
-      <div className="flex gap-2">
-        <button onClick={init} className="px-3 py-2 bg-indigo-600 text-white rounded">Inisialisasi</button>
-        <button onClick={computeSimple} className="px-3 py-2 border rounded">Hitung (simulasi)</button>
-      </div>
-      <div className="mt-4 text-sm text-gray-600">
-        Modul AHP ini adalah starting point yang dapat dikembangkan: pairwise comparison input, eigenvalue/eigenvector solver, consistency ratio, dan UI visual untuk matriks.
-      </div>
+  <!-- Category Modal -->
+  <div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="categoryForm">
+        <div class="modal-header"><h5 class="modal-title">Tambah Kategori</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-3"><label>Nama Kategori</label><input id="categoryName" class="form-control"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+      </form>
     </div>
-  );
-}
+  </div>
 
-// -------------------- Utilities --------------------
-function format(n){ return n.toLocaleString('id-ID'); }
+  <!-- Product Modal -->
+  <div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog">
+      <form class="modal-content" id="productForm">
+        <div class="modal-header"><h5 class="modal-title">Tambah Produk</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-3"><label>Nama Produk</label><input id="productName" class="form-control"></div>
+          <div class="mb-3"><label>Kategori</label><select id="productCategory" class="form-select"></select></div>
+          <div class="mb-3"><label>SKU</label><input id="productSku" class="form-control"></div>
+          <div class="mb-3"><label>Stok</label><input id="productStock" type="number" class="form-control" value="0"></div>
+          <div class="mb-3"><label>Harga</label><input id="productPrice" type="number" class="form-control" value="0"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-primary" type="submit">Simpan</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Order Modal (simple) -->
+  <div class="modal fade" id="orderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <form class="modal-content" id="orderForm">
+        <div class="modal-header"><h5 class="modal-title">Buat Pesanan</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <div class="mb-3 d-flex gap-2">
+            <select id="orderCustomer" class="form-select w-50"></select>
+            <select id="orderProduct" class="form-select w-50"></select>
+          </div>
+          <div class="mb-3 d-flex gap-2"><input id="orderQty" type="number" min="1" value="1" class="form-control w-25"><button id="addToCart" class="btn btn-secondary">Tambah</button></div>
+          <div><h6>Cart</h6><table class="table table-sm"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Total</th><th></th></tr></thead><tbody id="cartTable"></tbody></table></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button><button class="btn btn-success" type="submit">Simpan Pesanan</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // ---------- Sample in-memory data store (replace with API calls later) ----------
+    const state = {
+      users: [
+        {id:1,name:'Admin Utama',email:'super@tokoshop.test',role:'superadmin'},
+        {id:2,name:'Rina',email:'rina@tokoshop.test',role:'admin'},
+        {id:3,name:'Budi',email:'budi@tokoshop.test',role:'kasir'}
+      ],
+      suppliers:[{id:1,name:'CV.Supply',contact:'081234',address:'Jakarta'}],
+      customers:[{id:1,name:'Toko A',type:'member',contact:'081111'},{id:2,name:'Budi',type:'umum',contact:'082222'}],
+      categories:['Elektronik','Peralatan'],
+      products:[{id:1,category:'Elektronik',name:'Speaker',sku:'SP001',stock:10,price:250000},{id:2,category:'Peralatan',name:'Panci',sku:'PC001',stock:20,price:75000}],
+      orders:[],
+      installments:[],
+    };
+
+    // ---------- Utilities ----------
+    function $(id){return document.getElementById(id)}
+
+    // ---------- Render functions ----------
+    function renderUsers(){
+      const tbody = $('usersTable'); tbody.innerHTML='';
+      const roleFilter = $('filterRole').value; const q = $('searchUser').value.toLowerCase();
+      state.users.filter(u => (roleFilter==='all'||u.role===roleFilter) && (u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))).forEach((u,i)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td><button class='btn btn-sm btn-outline-secondary me-1' onclick="editUser(${u.id})">Edit</button><button class='btn btn-sm btn-danger' onclick="deleteUser(${u.id})">Hapus</button></td>`;
+        tbody.appendChild(tr);
+      });
+      $('stat-users').textContent = state.users.length;
+    }
+
+    function renderSuppliers(){
+      const tbody = $('supplierTable'); tbody.innerHTML='';
+      state.suppliers.forEach((s,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${s.name}</td><td>${s.contact}</td><td>${s.address}</td><td><button class='btn btn-sm btn-danger' onclick='deleteSupplier(${s.id})'>Hapus</button></td>`;tbody.appendChild(tr)});
+    }
+
+    function renderCustomers(){
+      const tbody = $('customerTable'); tbody.innerHTML='';
+      state.customers.forEach((c,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${c.name}</td><td>${c.type}</td><td>${c.contact}</td><td><button class='btn btn-sm btn-danger' onclick='deleteCustomer(${c.id})'>Hapus</button></td>`;tbody.appendChild(tr)});
+    }
+
+    function renderCategories(selectId){
+      const sel = $(selectId); sel.innerHTML=''; state.categories.forEach(cat=>{const 
