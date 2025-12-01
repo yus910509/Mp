@@ -392,4 +392,85 @@
     }
 
     function renderCategories(selectId){
-      const sel = $(selectId); sel.innerHTML=''; state.categories.forEach(cat=>{const 
+      const sel = $(selectId); sel.innerHTML=''; state.categories.forEach(cat=>{const o=document.createElement('option');o.value=cat;o.textContent=cat;sel.appendChild(o)});
+    }
+
+    function renderProducts(){
+      const tbody = $('productTable'); tbody.innerHTML='';
+      state.products.forEach((p,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${p.category}</td><td>${p.name}</td><td>${p.sku}</td><td>${p.stock}</td><td>Rp ${p.price.toLocaleString()}</td><td><button class='btn btn-sm btn-danger' onclick='deleteProduct(${p.id})'>Hapus</button></td>`;tbody.appendChild(tr)});
+      $('stat-products').textContent = state.products.length;
+    }
+
+    function renderOrders(){
+      const tbody = $('orderTable'); tbody.innerHTML='';
+      state.orders.forEach((o,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${o.invoice}</td><td>${o.customer}</td><td>Rp ${o.total.toLocaleString()}</td><td>${o.status}</td><td><button class='btn btn-sm btn-outline-secondary' onclick='viewOrder(${i})'>Lihat</button></td>`;tbody.appendChild(tr)});
+      $('stat-orders').textContent = state.orders.length;
+    }
+
+    function renderInstallments(){
+      const tbody = $('installmentTable'); tbody.innerHTML='';
+      state.installments.forEach((it,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${i+1}</td><td>${it.invoice}</td><td>${it.customer}</td><td>Rp ${it.amount.toLocaleString()}</td><td>${it.status}</td>`;tbody.appendChild(tr)});
+    }
+
+    // ---------- CRUD actions ----------
+    function editUser(id){
+      const u = state.users.find(x=>x.id===id); $('userId').value=u.id; $('userName').value=u.name; $('userEmail').value=u.email; $('userRole').value=u.role; new bootstrap.Modal($('userModal')).show();
+    }
+    function deleteUser(id){ if(confirm('Hapus user?')){ state.users = state.users.filter(u=>u.id!==id); renderUsers(); }}
+
+    function deleteSupplier(id){ if(confirm('Hapus supplier?')){ state.suppliers = state.suppliers.filter(s=>s.id!==id); renderSuppliers(); }}
+    function deleteCustomer(id){ if(confirm('Hapus pelanggan?')){ state.customers = state.customers.filter(c=>c.id!==id); renderCustomers(); }}
+    function deleteProduct(id){ if(confirm('Hapus produk?')){ state.products = state.products.filter(p=>p.id!==id); renderProducts(); renderOrderProductSelects(); }}
+
+    // ---------- Forms submit handlers ----------
+    document.getElementById('userForm').addEventListener('submit',function(e){e.preventDefault(); const id=+$('userId').value || Date.now(); const user={id, name:$('userName').value, email:$('userEmail').value, role:$('userRole').value}; const idx=state.users.findIndex(u=>u.id===id); if(idx>=0) state.users[idx]=user; else state.users.push(user); bootstrap.Modal.getInstance($('userModal')).hide(); renderUsers();});
+
+    document.getElementById('supplierForm').addEventListener('submit',function(e){e.preventDefault(); const id=+$('supplierId').value || Date.now(); const s={id,name:$('supplierName').value,contact:$('supplierContact').value,address:$('supplierAddress').value}; state.suppliers.push(s); bootstrap.Modal.getInstance($('supplierModal')).hide(); renderSuppliers();});
+
+    document.getElementById('customerForm').addEventListener('submit',function(e){e.preventDefault(); const id=+$('customerId').value || Date.now(); const c={id,name:$('customerName').value,type:$('customerType').value,contact:$('customerContact').value}; state.customers.push(c); bootstrap.Modal.getInstance($('customerModal')).hide(); renderCustomers(); renderOrderCustomerSelect();});
+
+    document.getElementById('categoryForm').addEventListener('submit',function(e){e.preventDefault(); const name=$('categoryName').value; if(name) state.categories.push(name); bootstrap.Modal.getInstance($('categoryModal')).hide(); renderCategories('productCategory');});
+
+    document.getElementById('productForm').addEventListener('submit',function(e){e.preventDefault(); const p={id:Date.now(), category:$('productCategory').value, name:$('productName').value, sku:$('productSku').value, stock:+$('productStock').value, price:+$('productPrice').value}; state.products.push(p); bootstrap.Modal.getInstance($('productModal')).hide(); renderProducts(); renderOrderProductSelects();});
+
+    // ---------- Order/cart logic ----------
+    let cart=[];
+    function renderOrderCustomerSelect(){ const sel=$('orderCustomer'); sel.innerHTML=''; state.customers.forEach(c=>{const o=document.createElement('option');o.value=c.name;o.textContent=`${c.name} (${c.type})`;sel.appendChild(o)}); }
+    function renderOrderProductSelects(){ const sel=$('orderProduct'); sel.innerHTML=''; state.products.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.name} - Rp ${p.price.toLocaleString()}`;sel.appendChild(o)}); }
+
+    document.getElementById('addToCart').addEventListener('click',function(e){e.preventDefault(); const pid=+$('orderProduct').value; const qty=+$('orderQty').value; const p=state.products.find(x=>x.id===pid); if(!p) return alert('Pilih produk'); cart.push({product:p.name,qty,price:p.price,total:qty*p.price}); renderCart();});
+    function renderCart(){ const tbody=$('cartTable'); tbody.innerHTML=''; cart.forEach((c,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${c.product}</td><td>${c.qty}</td><td>Rp ${c.price.toLocaleString()}</td><td>Rp ${c.total.toLocaleString()}</td><td><button class='btn btn-sm btn-danger' onclick='removeCart(${i})'>x</button></td>`;tbody.appendChild(tr)});
+    }
+    function removeCart(i){ cart.splice(i,1); renderCart(); }
+
+    document.getElementById('orderForm').addEventListener('submit',function(e){ e.preventDefault(); if(cart.length===0) return alert('Cart kosong'); const invoice='INV'+Date.now(); const customer=$('orderCustomer').value; const total=cart.reduce((s,c)=>s+c.total,0); state.orders.push({invoice,customer,total,status:'Lunas',items:cart}); // simple
+      cart=[]; renderCart(); bootstrap.Modal.getInstance($('orderModal')).hide(); renderOrders(); });
+
+    // ---------- Small view helpers ----------
+    function viewOrder(i){ const o=state.orders[i]; alert('Invoice: '+o.invoice+'\nCustomer: '+o.customer+'\nTotal: Rp '+o.total.toLocaleString()); }
+
+    // ---------- Charts ----------
+    let salesChart, topProductsChart, miniSalesChart;
+    function initCharts(){
+      const salesCtx = document.getElementById('salesChart').getContext('2d');
+      salesChart = new Chart(salesCtx, {type:'line', data:{labels:['Jan','Feb','Mar','Apr','May','Jun'], datasets:[{label:'Penjualan',data:[120,200,150,300,250,400],tension:0.4}]}, options:{responsive:true}});
+
+      const topCtx = document.getElementById('topProductsChart').getContext('2d');
+      topProductsChart = new Chart(topCtx, {type:'bar', data:{labels:['Speaker','Panci','Lampu'], datasets:[{label:'Terjual',data:[45,30,20]}]}, options:{responsive:true}});
+
+      const miniCtx = document.getElementById('miniSalesChart').getContext('2d');
+      miniSalesChart = new Chart(miniCtx,{type:'bar',data:{labels:['Wk1','Wk2','Wk3','Wk4'],datasets:[{label:'Sales',data:[10,20,18,25]}]},options:{responsive:true,plugins:{legend:{display:false}}}});
+    }
+
+    // ---------- Init ----------
+    function init(){ renderUsers(); renderSuppliers(); renderCustomers(); renderCategories('productCategory'); renderProducts(); renderOrderCustomerSelect(); renderOrderProductSelects(); initCharts(); renderOrders(); renderInstallments(); }
+    init();
+
+    // Filters
+    $('filterRole').addEventListener('change',renderUsers);
+    $('searchUser').addEventListener('input',renderUsers);
+    $('filterCustType').addEventListener('change',function(){ const t=this.value; const rows = state.customers.filter(c=> t==='all' || c.type===t); renderCustomers(); });
+
+  </script>
+</body>
+</html>
